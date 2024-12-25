@@ -2,6 +2,7 @@ import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import httpStatus from "http-status";
+import router from "./app/routes";
 
 // Cors Options
 const corsOptions = {
@@ -25,7 +26,7 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-// app.use("/api/v1");
+app.use("/api/v1", router);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   res.status(httpStatus.NOT_FOUND).json({
