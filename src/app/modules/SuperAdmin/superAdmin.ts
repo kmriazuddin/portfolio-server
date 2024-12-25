@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import prisma from "../../../shared/prisma";
 
 const admin = {
-  email: config.admin.admin,
+  email: config.admin.admin as string,
   password: config.admin.admin_password,
   role: ROLE.ADMIN,
 };

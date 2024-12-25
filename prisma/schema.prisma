@@ -14,6 +14,8 @@ model User {
   role      ROLE     @default(ADMIN)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("user")
 }
 
 model Skill {
@@ -24,11 +26,13 @@ model Skill {
   skillType String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("skill")
 }
 
 model Project {
   id           String   @id @default(uuid())
-  images       String
+  images       String[]
   title        String
   category     String
   technology   String
@@ -37,16 +41,20 @@ model Project {
   repositories String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  @@map("project")
 }
 
 model Blog {
   id          String   @id @default(uuid())
-  images      String
+  images      String[]
   title       String
   category    String
   description String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@map("blog")
 }
 
 enum ROLE {

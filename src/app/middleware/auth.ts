@@ -1,59 +1,41 @@
 import { NextFunction, Request, Response } from "express";
-import jwt, { JwtPayload, Secret } from "jsonwebtoken";
-import catchAsync from "../../shared/catchAsync";
+import { Secret } from "jsonwebtoken";
 import { AppError } from "../error/appError";
 import httpStatus from "http-status";
 import config from "../../config";
-import prisma from "../../shared/prisma";
+import { jwtHelpers } from "../../shared/jwtHelper";
 
-export type TUserRole = "ADMIN";
-
-export const auth = (...userRole: TUserRole[]) => {
-  return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const tokenData = req.headers.authorization;
-    const token = tokenData;
-
-    if (!token) {
-      throw new AppError(
-        httpStatus.UNAUTHORIZED,
-        "You Have No Access To This Route! ⛔"
-      );
-    }
-
+const auth = (...roles: string[]) => {
+  return async (
+    req: Request & { user?: any },
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
-      const decoded = jwt.verify(
+      const token = req.headers.authorization;
+
+      if (!token) {
+        throw new AppError(
+          httpStatus.UNAUTHORIZED,
+          "You Are Not Authorized ⛔"
+        );
+      }
+
+      const verifiedUser = jwtHelpers.verifyToken(
         token,
         config.jwt.jwt_secret as Secret
-      ) as JwtPayload;
-
-      const { role, userEmail } = decoded as JwtPayload;
-
-      const user = await prisma.user.findUnique({
-        where: { email, userEmail },
-      });
-
-      if (!user) {
-        throw new AppError(
-          httpStatus.UNAUTHORIZED,
-          "You Have No Access To This Route! ⛔"
-        );
-      }
-
-      if (userRole && !userRole.includes(role)) {
-        throw new AppError(
-          httpStatus.UNAUTHORIZED,
-          "You Have No Access To This Route! ⛔"
-        );
-      }
-
-      req.user = decoded as JwtPayload;
-
-      next();
-    } catch (error: any) {
-      throw new AppError(
-        httpStatus.UNAUTHORIZED,
-        "You Have No Access To This Route! ⛔"
       );
+
+      req.user = verifiedUser;
+
+      if (roles.length && !roles.includes(verifiedUser.role)) {
+        throw new AppError(httpStatus.FORBIDDEN, "Forbidden Access ⛔");
+      }
+      next();
+    } catch (error) {
+      next(error);
     }
-  });
+  };
 };
+
+export default auth;
